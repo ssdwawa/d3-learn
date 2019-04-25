@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>testD3-3-drawingDivBar</title>
+<script src="http://d3js.org/d3.v3.js"></script>
+<style type="text/css">
+div.bar {
+    display: inline-block;
+    width: 20px;
+    margin-right: 2px;
+    background-color: teal;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+
+	</div>
+<script type="text/javascript">
+	var w = 500;
+	var h = 100;
+    var dataset = [ 5, 10, 15, 20, 25 ];
+	var svg = d3.select('.container').append('svg').attr({'width':w,'height':h})
+	var rect = svg.selectAll("rect").data(dataset).enter().append("rect")
+	var text = svg.selectAll("text").data(dataset).enter().append("text").text(function(d) {
+                    return d;
+    })
+	rect.attr(
+		{
+			x:(i)=>(i * 7),
+			y:(d)=>(h-d*4),
+			"width": '30px',
+			'height':(d,i)=> (d*4+'px'),
+			fill:(d)=>('red')
+		})
+	text.attr(
+		{
+			x:(i)=>(i * 7+15),
+			y:(d)=>(h-d*4+15),
+			fill:(d)=>('white'),
+			"font-size": "11px"
+		}
+	) .attr("text-anchor", "middle")
+</script>
+</body>

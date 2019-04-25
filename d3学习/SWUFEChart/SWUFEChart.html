@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible"
+		  content="IE=edge">
+	<title>Page Title</title>
+	<meta name="viewport"
+		  content="width=device-width, initial-scale=1">
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<style>
+	.selected {
+		fill: red;
+		stroke: brown;
+	}
+</style>
+
+<body>
+	<svg id="room"
+		 width="960"
+		 height="500">
+
+	</svg>
+</body>
+<script>
+	function test(initArr) {
+
+		x = d3.scaleLinear().domain([d3.min(initArr.xList) * 1.15, d3.max(initArr.xList) * 1.15]).range([0, this.width]),
+			y = d3.scaleLinear().domain([d3.min(initArr.yList) * 1.15, d3.max(initArr.yList) * 1.15]).range([this.height,
+				0])
+
+
+		xAxis = d3.axisBottom(x).ticks(12),
+			yAxis = d3.axisLeft(y).ticks(12 * this.height / this.width);
+
+		this.g.append("g")
+			.attr("class", "axis axis--x")
+			.attr("transform", "translate(" + x(0) + "," + y(0) + ")")
+			.call(xAxis);
+
+		this.g.append("g")
+			.attr("class", "axis axis--y")
+			.attr("transform", "translate(" + x(0) + ",0)")
+			.call(yAxis);
+
+		// this.g.selectAll(".axis--y .tick").each(function (d) {
+		// 	if (d == 0.0) {
+		// 		this.remove();
+		// 	}
+		// });
+
+		// this.g.selectAll(".axis--x .tick").each(function (d) {
+		// 	if (d == 0.0) {
+		// 		d3.select(this).select('text').attr("dx", "-1.5em");
+		// 		d3.select(this).select('text').attr("dy", "1.5em");
+		// 	}
+		// });
+
+	}
+	var SWUFEFIChart = {
+		margin: {
+			top: 20,
+			right: 50,
+			bottom: 20,
+			left: 80
+		},
+		width: undefined,
+		height: undefined,
+		svg: undefined,
+		g: undefined,
+		swufe: d3,
+
+		init: function (dom, opts) {
+			this.svg = d3.select('#' + dom),
+				this.margin = opts.margin || this.margin
+
+			this.width = +this.svg.attr("width") - this.margin.left - this.margin.right
+			this.height = +this.svg.attr("height") - this.margin.top - this.margin.bottom
+			this.g = this.svg.append("g").attr("transform", "translate(" + this.margin.left + "," + this.margin
+				.top + ")")
+
+			var initArr = {
+				xList: [],
+				yList: []
+			}
+
+			for (var i = 0; i < opts.dataSeries.length; i++) {
+				var dataList = opts.dataSeries[i].data
+
+				for (var j = 0; j < dataList.length; j++) {
+					initArr.xList.push(dataList[j][0])
+					initArr.yList.push(dataList[j][1])
+				}
+			}
+
+			this.axisHandle(initArr)
+
+			for (var i = 0; i < opts.dataSeries.length; i++) {
+				this.dataHandle(opts.dataSeries[i])
+			}
+
+			if (opts.brush) {
+				brush = d3.brushX()
+					.extent([
+						[0, 0],
+						[this.width, this.height]
+					])
+
+				this.g.append("g")
+					.call(brush)
+					.call(brush.move, [3, 5].map(x))
+
+				var extent = [3, 5].map(x);
+
+			}
+
+			return this
+		},
+
+		dataHandle: function (item) {
+			switch (item.type) {
+				case 'circle':
+					this.drawingCircle(item)
+					break;
+			}
+		},
+
+		axisHandle:test,
+
+		drawingCircle: function (opt) {
+			console.log(opt)
+			this.g.append("g")
+				.attr("fill-opacity", 0.2)
+				.selectAll("circle")
+				.data(opt.data)
+				.enter().append("circle")
+				.attr("transform", function (d) {
+					return "translate(" + x(d[0]) + "," + y(d[1]) + ")";
+				})
+				.attr("r", 3.5);
+		},
+
+		on: function (type, func) {
+			switch (type) {
+				case 'brush':
+					brush.on("start brush", func.bind(d3))
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
+</script>
+<script>
+	var randomX = d3.randomUniform(0, 10),
+		randomY = d3.randomNormal(0, 0.12),
+		data = d3.range(80).map(function () {
+			return [randomX(), randomY()];
+		});
+
+
+	var FIC = SWUFEFIChart.init('room', {
+		brush: true,
+		dataSeries: [{
+			type: 'circle',
+			data: data
+		}],
+	})
+
+	FIC.on('brush', function brushed() {
+		var extent = this.event.selection.map(x.invert, x);
+
+		this.selectAll('circle').classed("selected", function (d) {
+			return extent[0] <= d[0] && d[0] <= extent[1];
+		});
+
+	})
+</script>
+
+</html>

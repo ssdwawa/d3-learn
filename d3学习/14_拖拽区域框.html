@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<svg width="960"
+	 height="600"></svg>
+
+<button onclick="up()">123</button>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<style>
+	#area {
+		width: 600px;
+		height: 600px;
+		margin: 20px 20px;
+		padding: 15px 25px;
+		border: 1px solid #cccccc;
+		position: relative;
+	}
+
+	.tolTp {
+		padding: 8px 12px;
+		background: rgba(0, 0, 0, 0.7);
+		color: white;
+		height: 55px;
+	}
+
+	.tolTp .border {
+		width: 6px;
+		height: 6px;
+		border-radius: 3px;
+		background: #83bff6;
+		float: left;
+		margin: 7px 8px 7px 0;
+	}
+
+	.tolTp span {
+		float: left;
+		line-height: 20px;
+	}
+</style>
+<script>
+	function up() {
+		data[0].value = 20
+		g.selectAll('.line')
+			.attr('d', line(data))
+	}
+	var data = [{
+		name: '小米',
+		value: 40.7
+	}, {
+		name: '华为',
+		value: 20.8
+	}, {
+		name: '联想',
+		value: 26.4
+	}, {
+		name: '三星',
+		value: 40.8
+	}, {
+		name: '苹果',
+		value: 30.8
+	}, {
+		name: '其他',
+		value: 48.8
+	}]
+
+	var svg = d3.select('svg'),
+		margin = {
+			top: 194,
+			right: 50,
+			bottom: 214,
+			left: 50
+		},
+		width = +svg.attr("width") - margin.left - margin.right,
+		height = +svg.attr("height") - margin.top - margin.bottom,
+		g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	let xData = data.map((item) => item.name),
+		yData = data.map((item) => item.value)
+
+	var x = d3.scalePoint().domain(xData).range([0, width]),
+		y = d3.scaleLinear().domain([0, d3.max(yData) + 15]).range([height, 0])
+
+	var xAxis = d3.axisBottom(x).ticks(12),
+		yAxis = d3.axisLeft(y).ticks(12 * height / width);
+
+	g.append("g")
+		.attr("class", "axis axis--x")
+		.attr("transform", "translate(0," + (height) + ")")
+		.call(xAxis);
+
+	g.append("g")
+		.attr("class", "axis axis--y")
+		.attr("transform", "translate(0,0)")
+		.call(yAxis);
+
+
+	// 添加一条线条
+	let line = d3.line()
+		.x(function (d) {
+			// 这里用xScale会有问题
+			return x(d.name)
+		})
+		.y(function (d) {
+			return y(d.value)
+		})
+		.curve(d3.curveCatmullRom)
+
+	g.append('path')
+		.attr('stroke', '#19CAAD')
+		.attr('stroke-width', '3px')
+		.attr('fill', 'none')
+		.attr('class', 'line')
+		.attr('d', line(data))
+
+	//画区域
+	let area = d3.area()
+		.x(function (d) {
+			// 这里用xScale会有问题
+			return x(d.name)
+		})
+		.y0(function (d) {
+			return height
+		})
+		.y1(function (d) {
+			return y(d.value)
+		})
+		.curve(d3.curveCatmullRom)
+	g.append("path")
+		.attr("class", "area")
+		.attr("d", area(data))
+		.attr("fill", '#19CAAD')
+
+	//拉伸框
+	var brush = d3.brushX()
+		.extent([
+			[0, 0],
+			[width, height]
+		])
+		// .on("start brush", brushed)
+		// .on("end", brushedEnd);
+
+	g.append("g")
+		.call(brush)
+		.call(brush.move, ['华为', '三星'].map(x))
+		.selectAll(".overlay")
+		.each(function (d) {
+			d.type = "selection";
+
+		})
+</script>
