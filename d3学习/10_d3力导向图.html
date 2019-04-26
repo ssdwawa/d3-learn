@@ -17,10 +17,10 @@
 </html>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
-    var nodes = [{ name: "桂林", color: 'red', width: 15 }, { name: "广州", color: 'red', width: 10 },
-    { name: "厦门", color: 'red', width: 25 }, { name: "杭州", color: 'red', width: 13 },
-    { name: "上海", color: 'red', width: 15 }, { name: "青岛", color: 'red', width: 22 },
-    { name: "天津", color: 'red', width: 35 }];
+    var nodes = [{ name: "600056.SH", color: 'red', width: 15 }, { name: "600035.SH", color: 'red', width: 10 },
+    { name: "600057.SH", color: 'blue', width: 25 }, { name: "600071.SH", color: 'red', width: 13 },
+    { name: "600036.SH", color: 'red', width: 15 }, { name: "600059.SH", color: 'gray', width: 22 },
+    { name: "600015.SH", color: 'green', width: 35 }];
     var links = [{ color: 'blue', source: 0, distance: 200, target: 1 }, { color: 'red', source: 0, distance: 100, target: 2 },
     { color: 'red', source: 0, distance: 50, target: 3 }, { color: 'red', source: 1, distance: 100, target: 4 },
     { color: 'red', source: 1, distance: 130, target: 5 }, { color: 'red', source: 1, distance: 100, target: 6 }];
@@ -76,7 +76,7 @@
 
 
     svg_nodes.on('mouseenter', function (node) {
-        var isChoiceArry = handleColor(node.index)
+        var isChoiceArry = handleNodeColor(node.index)
         svg_nodes.style('opacity', .1)
             .filter(link => {
                 if (isChoiceArry.indexOf(link.index) > -1) {
@@ -85,8 +85,17 @@
             })
             .style('opacity', 1)
 
+        svg_links.style('opacity', .1)
+            .filter(link => {
+                if (link.source.index == node.index || link.target.index == node.index) {
+                    return true
+                }
+            })
+            .style('opacity', 1)
+
     }).on('mouseleave', function (node) {
         svg_nodes.style('opacity', 1)
+        svg_links.style('opacity', 1)
     });
 
     //绘制描述节点的文字
@@ -160,7 +169,7 @@
 
 
     //处理之间关系
-    function handleColor(node) {
+    function handleNodeColor(node) {
         var relations = []
         relations.push(node)
         links.forEach(link => {
