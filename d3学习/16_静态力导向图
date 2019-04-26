@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<svg width="1920"
+	 height="1080"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+	var svg = d3.select("svg"),
+		width = +svg.attr("width"),
+		height = +svg.attr("height"),
+		g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+	var n = 4000,
+		nodes = d3.range(n).map(function (i) {
+			return {
+				index: i
+			};
+		}),
+		links = d3.range(n).map(function (i) {
+			return {
+				source: i,
+				target: (i + 3) % n
+			};
+		});
+
+	var simulation = d3.forceSimulation(nodes)
+		.force("charge", d3.forceManyBody().strength(-80))
+		.force("link", d3.forceLink(links).distance(50).strength(1).iterations(50))
+		.force("x", d3.forceX())
+		.force("y", d3.forceY())
+		.stop()
+		.on("tick", ticked);
+
+	// Use a timeout to allow the rest of the page to load first.
+	// d3.timeout(function () {
+
+	// See https://github.com/d3/d3-force/blob/master/README.md#simulation_tick
+	for (var i = 0, n = Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())); i <
+		30; ++i) {
+			console.log(n)
+		simulation.tick();
+	}
+
+	var svg_links = g.append("g")
+		.attr("stroke", "#000")
+		.attr("stroke-width", 1.5)
+		.selectAll("line")
+		.data(links)
+		.enter().append("line")
+		.attr("x1", function (d) {
+			return d.source.x;
+		})
+		.attr("y1", function (d) {
+			return d.source.y;
+		})
+		.attr("x2", function (d) {
+			return d.target.x;
+		})
+		.attr("y2", function (d) {
+			return d.target.y;
+		});
+
+	var svg_nodes = g.append("g")
+		.attr("stroke", "#fff")
+		.attr("stroke-width", 1.5)
+		.selectAll("circle")
+		.data(nodes)
+		.enter().append("circle")
+		.attr("cx", function (d) {
+			return d.x;
+		})
+		.attr("cy", function (d) {
+			return d.y;
+		})
+		.attr("r", 4.5)
+		.call(d3.drag().on("start", dragstarted) //d3.drag() 创建一个拖曳行为
+			.on("drag", dragged)
+			.on("end", dragended));
+
+
+	function dragstarted(d) {
+		if (!d3.event.active) simulation.alphaTarget(0.3).restart(); //alpha是动画的冷却系数，运动过程中会不断减小，直到小于0.005为止，此时动画会停止。
+		d.fx = d.x; //fx为固定坐标，x为初始坐标  注3>  
+		d.fy = d.y;
+	}
+
+	//监听拖拽中  
+	function dragged(d) {
+		d.fx = d3.event.x; //fevent.x为拖拽移动时的坐标
+		d.fy = d3.event.y;
+	}
+
+	//监听拖拽结束
+	function dragended(d) {
+		if (!d3.event.active) simulation.alphaTarget(0);
+		// d.fx = null;        //固定坐标清空
+		// d.fy = null;
+	}
+
+	//拖拽时的事件监听器  以实时更新坐标
+	function ticked() {
+		svg_links.attr("x1", function (d) {
+				return d.source.x;
+			})
+			.attr("y1", function (d) {
+				return d.source.y;
+			})
+			.attr("x2", function (d) {
+				return d.target.x;
+			})
+			.attr("y2", function (d) {
+				return d.target.y;
+			});
+
+		svg_nodes.attr("cx", function (d) {
+				return d.x;
+			})
+			.attr("cy", function (d) {
+				return d.y;
+			});
+
+	}
+	// });
+</script>
